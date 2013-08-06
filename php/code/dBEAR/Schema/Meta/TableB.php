@@ -22,7 +22,7 @@
 namespace dBEAR\Schema\Meta;
 
 
-use dBEAR\Schema\Base;
+use dBEAR\Schema\Domain\Base;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Type;
 

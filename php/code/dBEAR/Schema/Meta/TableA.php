@@ -23,8 +23,8 @@ namespace dBEAR\Schema\Meta;
 
 
 use dBear\Bear;
-use dBEAR\Schema\Attribute;
-use dBEAR\Schema\Entity;
+use dBEAR\Schema\Domain\Attribute;
+use dBEAR\Schema\Domain\Entity;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Type;
 

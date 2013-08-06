@@ -18,14 +18,16 @@
  * User: Alex Gusev <flancer64@gmail.com>
  */
 
-namespace dBEAR\Schema;
+namespace dBEAR\Schema\Domain;
 
+
+use dBEAR\Schema\Domain\Entity;
 
 class Base
 {
     const XML_ENTITIES = 'entities';
     const XML_VERSION  = 'version';
-    /** @var \dBEAR\Schema\Entity[] */
+    /** @var \dBEAR\Schema\Domain\Entity[] */
     private $entities = array();
     private $version;
 

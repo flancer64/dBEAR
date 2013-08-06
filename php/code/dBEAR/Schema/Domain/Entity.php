@@ -18,7 +18,7 @@
  * User: Alex Gusev <flancer64@gmail.com>
  */
 
-namespace dBEAR\Schema;
+namespace dBEAR\Schema\Domain;
 
 /** @Entity
  * @Table(name="_e")
@@ -31,7 +31,7 @@ class Entity
     const XML_NOTES      = 'notes';
     /** @Id @Column(type="string") * */
     private $alias;
-    /** @var \dBEAR\Schema\Attribute[] */
+    /** @var \dBEAR\Schema\Domain\Attribute[] */
     private $attributes = array();
     private $notes;
 

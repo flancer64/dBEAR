@@ -51,7 +51,7 @@ class Processor
         $conn = DriverManager::getConnection($connectionParams, $config);
         $entityManager = EntityManager::create($conn, $config);
 
-        $productRepository = $entityManager->getRepository('\dBEAR\Schema\Entity');
+        $productRepository = $entityManager->getRepository('\dBEAR\Schema\Domain\Entity');
         $products = $productRepository->findAll();
         1+1;
     }

@@ -18,7 +18,7 @@
  * User: Alex Gusev <flancer64@gmail.com>
  */
 
-namespace dBEAR\Schema;
+namespace dBEAR\Schema\Domain;
 
 
 class Attribute

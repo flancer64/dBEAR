@@ -32,7 +32,7 @@ class Bear
 {
     const META_ALIAS_LENGTH = 8;
     const META_NAME_LENGTH  = 64;
-    /** @var  \dBEAR\Schema\Base */
+    /** @var  \dBEAR\Schema\Domain\Base */
     private $base;
     /** @var  \Doctrine\DBAL\Schema\AbstractSchemaManager */
     private $schemaMan;
@@ -63,7 +63,7 @@ class Bear
     }
 
     /**
-     * @return \dBEAR\Schema\Base
+     * @return \dBEAR\Schema\Domain\Base
      */
     public function getBase()
     {
@@ -71,7 +71,7 @@ class Bear
     }
 
     /**
-     * @param \dBEAR\Schema\Base $base
+     * @param \dBEAR\Schema\Domain\Base $base
      */
     public function setBase($base)
     {
@@ -94,7 +94,7 @@ class Bear
 
     public function schemaLoad($xmlFile)
     {
-        /** @var  $base \dBEAR\Schema\Base */
+        /** @var  $base \dBEAR\Schema\Domain\Base */
         $this->base = Parser::parseXmlFile($xmlFile);
     }
 }

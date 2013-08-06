@@ -22,9 +22,9 @@
 namespace dBEAR\Xml;
 
 
-use dBEAR\Schema\Attribute;
-use dBEAR\Schema\Base;
-use dBEAR\Schema\Entity;
+use dBEAR\Schema\Domain\Attribute;
+use dBEAR\Schema\Domain\Base;
+use dBEAR\Schema\Domain\Entity;
 
 class Parser
 {
