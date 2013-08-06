@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.flancer64.com/dBEAR/Schema"
+        elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:tns="http://www.flancer64.com/dBEAR/Schema">
+
+    <complexType name="BaseType">
+        <all>
+            <element name="entities" type="tns:ArrayEntitiesType"
+                     minOccurs="1" maxOccurs="1">
+            </element>
+        </all>
+        <attribute name="version" type="int" use="required">
+            <annotation>
+                <documentation>Ordinal number of the version of the data
+                    structure.
+                </documentation>
+            </annotation>
+        </attribute>
+    </complexType>
+
+    <complexType name="EntityType">
+        <all>
+            <element name="notes" type="string" minOccurs="1" maxOccurs="1">
+                <annotation>
+                    <documentation>
+                        Human related description of the entity.
+                    </documentation>
+                </annotation>
+            </element>
+            <element name="attributes" type="tns:ArrayAttributesType"
+                     minOccurs="1" maxOccurs="1">
+            </element>
+        </all>
+        <attribute name="alias" use="required" type="tns:AliasType">
+            <annotation>
+                <documentation>Alias to be used in the tables and views names.
+                </documentation>
+            </annotation>
+        </attribute>
+    </complexType>
+
+    <complexType name="AttributeType">
+        <all>
+            <element name="name" type="tns:NameType" minOccurs="1"
+                     maxOccurs="1">
+                <annotation>
+                    <documentation>This value is used to name columns in views.
+                    </documentation>
+                </annotation>
+            </element>
+            <element name="notes" type="string">
+                <annotation>
+                    <documentation>
+                        Human related description of the entity.
+                    </documentation>
+                </annotation>
+            </element>
+            <element name="type" type="string" minOccurs="1" maxOccurs="1">
+                <annotation>
+                    <documentation>SQL data type to store attribute values.
+                    </documentation>
+                </annotation>
+            </element>
+        </all>
+        <attribute name="alias" use="required" type="tns:AliasType">
+
+            <annotation>
+                <documentation>
+                    Alias to be used in the tables and views names.
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="temporal" use="required" type="boolean">
+            <annotation>
+                <documentation>Is this attribute temporal (need save all updates)?
+                </documentation>
+            </annotation>
+        </attribute>
+        <attribute name="required" type="boolean" use="required">
+            <annotation>
+                <documentation>Is this attribute should contain value for all
+                    instances of the entity (is not nullable)?
+                </documentation>
+            </annotation>
+        </attribute>
+    </complexType>
+
+    <complexType name="RelationType"></complexType>
+
+    <element name="dBEAR" type="tns:BaseType"></element>
+
+    <complexType name="ArrayAttributesType">
+        <sequence>
+            <element name="attribute" type="tns:AttributeType" minOccurs="1"
+                     maxOccurs="unbounded"></element>
+        </sequence>
+    </complexType>
+    <complexType name="ArrayEntitiesType">
+        <sequence>
+            <element name="entity" type="tns:EntityType" minOccurs="1"
+                     maxOccurs="unbounded"></element>
+        </sequence>
+    </complexType>
+
+    <simpleType name="AliasType">
+        <annotation>
+            <documentation>Alias for entities, attributes, etc. Used in the
+                naming rules for tables and views.
+            </documentation>
+        </annotation>
+        <restriction base="string">
+            <minLength value="1"></minLength>
+            <maxLength value="8"></maxLength>
+            <whiteSpace value="collapse"></whiteSpace>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="NameType">
+        <annotation>
+            <documentation>Alias for entities, attributes, etc. Used in the
+                naming rules for tables and views.
+            </documentation>
+        </annotation>
+        <restriction base="string">
+            <minLength value="1"></minLength>
+            <maxLength value="64"></maxLength>
+            <whiteSpace value="collapse"></whiteSpace>
+        </restriction>
+    </simpleType>
+
+</schema>
