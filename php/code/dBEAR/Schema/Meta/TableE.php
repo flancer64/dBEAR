@@ -41,6 +41,11 @@ class TableE
         return $result;
     }
 
+    public static function getActualName($alias)
+    {
+        return self::getRegistryPrefix() . $alias . '_act';
+    }
+
     public static function getName()
     {
         return '_e';

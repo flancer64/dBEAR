@@ -16,7 +16,7 @@
                     <tns:name>NameLast</tns:name>
                     <tns:notes>Customer's Last Name.</tns:notes>
                 </tns:attribute>
-                <tns:attribute alias="email" temporal="true" required="true">
+                <tns:attribute alias="email" temporal="false" required="true">
                     <tns:type>String</tns:type>
                     <tns:name>Email</tns:name>
                     <tns:notes>Customer's email.</tns:notes>

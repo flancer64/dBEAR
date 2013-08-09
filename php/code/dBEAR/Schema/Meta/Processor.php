@@ -120,11 +120,17 @@ class Processor
                 $this->tblAttributes[$tblAttrRegistry->getName()] = $tblAttrRegistry;
                 /** create views for temporal attributes */
                 if ($oneAttr->isTemporal()) {
-                    $viewAttrTs  = $this->generateAttributeViewTs($oneAttr);
-                    $viewAttrAct = $this->generateAttributeViewAct($oneAttr);
+                    /** skip temporal attrs */
+//                    $viewAttrTs = $this->generateAttributeViewTs($oneAttr);
+//                    $this->schemaMan->dropAndCreateView($viewAttrTs);
+//                    $viewAttrAct = $this->generateAttributeViewAct($oneAttr);
+//                    $this->schemaMan->dropAndCreateView($viewAttrAct);
                 }
             }
-            $q = 2;
+            /** Generate view for the last version of the entity */
+            $viewEntityLast = $this->generateEntityActual($oneEntity);
+            $this->schemaMan->dropAndCreateView($viewEntityLast);
+
         }
     }
 
@@ -160,10 +166,13 @@ class Processor
         $sql .= "FROM $tblEntity LEFT JOIN $tblAttr ON $tblEntity.$colEntityId=$tblAttr.$colAttrEntityId ";
         $sql .= "GROUP BY `$tblEntity`.`$colEntityId`";
         $result = new View($viewName, $sql);
-        $this->schemaMan->createView($result);
         return $result;
     }
 
+    /**
+     * @param Attribute $attribute
+     * @return View
+     */
     private function generateAttributeViewTs(Attribute $attribute)
     {
         $viewName        = TableA::getTemporalTsName($attribute->getAlias(), $attribute->getEntity());
@@ -175,7 +184,28 @@ class Processor
         $sql .= "FROM $tblAttr ";
         $sql .= "GROUP BY `$tblAttr`.`$colAttrEntityId`";
         $result = new View($viewName, $sql);
-        $this->schemaMan->createView($result);
+        return $result;
+    }
+
+    private function generateEntityActual(Entity $entity)
+    {
+        $viewName    = TableE::getActualName($entity->getAlias());
+        $tblEntity   = TableE::getRegistryName($entity->getAlias());
+        $colEntityId = TableE::getRegistryColId();
+        /** compose SQL statement */
+        $cols  = "$tblEntity.$colEntityId  AS ". TableE::getRegistryColId();
+        $joins = '';
+        foreach ($entity->getAttributes() as $attr) {
+            /** @var  $attr Attribute */
+            $tblAttr       = TableA::getRegistryName($attr->getAlias(), $attr->getEntity());
+            $colAttrEntity = TableA::getRegistryColEntity();
+            $colAttrValue  = TableA::getRegistryColValue();
+            $colAttrName   = $attr->getName();
+            $cols .= ", $tblAttr.$colAttrValue AS $colAttrName";
+            $joins .= "LEFT OUTER JOIN $tblAttr ON $tblEntity.$colEntityId=$tblAttr.$colAttrEntity ";
+        }
+        $sql    = "SELECT $cols FROM $tblEntity $joins";
+        $result = new View($viewName, $sql);
         return $result;
     }
 
