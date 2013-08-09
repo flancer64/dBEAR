@@ -24,5 +24,5 @@ namespace dBEAR\Exception;
 class BearException extends \Exception
 {
     const ERR_BASE_IS_NULL       = 200;
-    const ERR_SCHEMA_MAN_IS_NULL = 400;
+    const ERR_CONNECTION_IS_NULL = 400;
 }

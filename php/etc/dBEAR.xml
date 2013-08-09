@@ -6,12 +6,12 @@
         <tns:entity alias="cust">
             <tns:notes>Customer notes</tns:notes>
             <tns:attributes>
-                <tns:attribute alias="nfirst" temporal="true" required="true">
+                <tns:attribute alias="nfirst" temporal="false" required="true">
                     <tns:type>String</tns:type>
                     <tns:name>NameFirst</tns:name>
                     <tns:notes>Customer's first name.</tns:notes>
                 </tns:attribute>
-                <tns:attribute alias="nlast" temporal="true" required="true">
+                <tns:attribute alias="nlast" temporal="false" required="true">
                     <tns:type>String</tns:type>
                     <tns:name>NameLast</tns:name>
                     <tns:notes>Customer's Last Name.</tns:notes>

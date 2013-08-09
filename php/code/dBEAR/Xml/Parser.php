@@ -162,6 +162,11 @@ class Parser
                     break;
             }
         }
+        /** link attributes to the entity */
+        foreach ($result->getAttributes() as $one) {
+            /** @var $one Attribute */
+            $one->setEntity($result->getAlias());
+        }
         return $result;
     }
 }

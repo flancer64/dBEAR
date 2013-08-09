@@ -23,12 +23,19 @@ namespace dBEAR\Schema\Domain;
 
 use dBEAR\Schema\Domain\Entity;
 
+/**
+ * @Entity
+ * @Table(name="_b")
+ */
 class Base
 {
     const XML_ENTITIES = 'entities';
     const XML_VERSION  = 'version';
     /** @var \dBEAR\Schema\Domain\Entity[] */
     private $entities = array();
+    /** @Id @Column(type="text") * */
+    private $schema;
+    /** @Id @Column(type="integer") * */
     private $version;
 
     /**
@@ -55,6 +62,22 @@ class Base
     {
         $result = isset($this->entities[$alias]) ? $this->entities[$alias] : null;
         return $result;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSchema()
+    {
+        return $this->schema;
+    }
+
+    /**
+     * @param mixed $schema
+     */
+    public function setSchema($schema)
+    {
+        $this->schema = $schema;
     }
 
     /**

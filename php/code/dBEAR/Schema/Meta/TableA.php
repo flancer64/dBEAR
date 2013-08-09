@@ -36,11 +36,10 @@ class TableA
     const COL_IS_TEMPORAL = Attribute::XML_TEMPORAL;
     const COL_NAME        = Attribute::XML_NAME;
     const COL_TYPE        = Attribute::XML_TYPE;
-    const NAME            = '_a';
 
     public static function generate()
     {
-        $result = new Table(self::NAME);
+        $result = new Table(self::getName());
         $result->addColumn(self::COL_ENTITY, Type::STRING, array('length' => Bear::META_ALIAS_LENGTH, 'comment' => 'Entity alias.'));
         $result->addColumn(self::COL_ALIAS, Type::STRING, array('length' => Bear::META_ALIAS_LENGTH, 'comment' => 'Alias to be used in the tables and views names.'));
         $result->addColumn(self::COL_NAME, Type::STRING, array('length' => Bear::META_NAME_LENGTH, 'comment' => 'This value is used to name columns in views.'));
@@ -56,6 +55,41 @@ class TableA
 
     public static function getName()
     {
-        return self::NAME;
+        return '_a';
+    }
+
+    public static function getRegistryColEntity()
+    {
+        return 'entity_id';
+    }
+
+    public static function getRegistryColUpdated()
+    {
+        return 'updated';
+    }
+
+    public static function getRegistryColValue()
+    {
+        return 'value';
+    }
+
+    public static function getRegistryName($alias, $entity)
+    {
+        return self::getRegistryPrefix() . $entity . '_' . $alias;
+    }
+
+    public static function getRegistryPrefix()
+    {
+        return 'a_';
+    }
+
+    public static function getTemporalActName($alias, $entity)
+    {
+        return self::getRegistryName($alias, $entity) . '_act';
+    }
+
+    public static function getTemporalTsName($alias, $entity)
+    {
+        return self::getRegistryName($alias, $entity) . '_ts';
     }
 }

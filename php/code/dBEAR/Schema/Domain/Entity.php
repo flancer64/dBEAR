@@ -20,7 +20,8 @@
 
 namespace dBEAR\Schema\Domain;
 
-/** @Entity
+/**
+ * @Entity
  * @Table(name="_e")
  */
 class Entity
@@ -29,7 +30,7 @@ class Entity
     const XML_ALIAS      = 'alias';
     const XML_ATTRIBUTES = 'attributes';
     const XML_NOTES      = 'notes';
-    /** @Id @Column(type="string") * */
+    /** @Id @Column(type="string", length=8) * */
     private $alias;
     /** @var \dBEAR\Schema\Domain\Attribute[] */
     private $attributes = array();

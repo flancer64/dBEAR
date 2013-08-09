@@ -31,11 +31,10 @@ class TableE
 {
     const COL_ALIAS = Entity::XML_ALIAS;
     const COL_NOTES = Entity::XML_NOTES;
-    const NAME      = '_e';
 
     public static function generate()
     {
-        $result = new Table(self::NAME);
+        $result = new Table(self::getName());
         $result->addColumn(self::COL_ALIAS, Type::STRING, array('length' => Bear::META_ALIAS_LENGTH, 'comment' => 'Alias to be used in the tables and views names.'));
         $result->addColumn(self::COL_NOTES, Type::STRING, array('comment' => 'Human related description of the entity.'));
         $result->setPrimaryKey(array(self::COL_ALIAS));
@@ -44,6 +43,21 @@ class TableE
 
     public static function getName()
     {
-        return self::NAME;
+        return '_e';
+    }
+
+    public static function getRegistryColId()
+    {
+        return 'id';
+    }
+
+    public static function getRegistryName($alias)
+    {
+        return self::getRegistryPrefix() . $alias;
+    }
+
+    public static function getRegistryPrefix()
+    {
+        return 'e_';
     }
 }

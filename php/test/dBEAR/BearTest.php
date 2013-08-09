@@ -35,7 +35,7 @@ class BearTest extends TestUnit
 
     public function test_metaUpdateStructure()
     {
-        $bear = new Bear();
+        $bear = new Bear(self::_getDbConnection());
         try {
             $bear->metaUpdateStructure();
         } catch (BearException $e) {
@@ -48,7 +48,7 @@ class BearTest extends TestUnit
 
     public function test_schemaLoad()
     {
-        $bear = new Bear();
+        $bear = new Bear(self::_getDbSchemaManager());
         $bear->schemaLoad(self::getXmlSchemaFile());
         $this->assertNotNull($bear->getBase());
     }

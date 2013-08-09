@@ -20,7 +20,10 @@
 
 namespace dBEAR\Schema\Domain;
 
-
+/**
+ * @Entity
+ * @Table(name="_a")
+ */
 class Attribute
 {
     const NAME         = 'attribute';
@@ -30,11 +33,14 @@ class Attribute
     const XML_REQUIRED = 'required';
     const XML_TEMPORAL = 'temporal';
     const XML_TYPE     = 'type';
+    /** @Id @Column(type="string", length=8) */
     private $alias;
+    /** @Id @Column(type="string", length=8) */
+    private $entity;
     /** @var  boolean */
-    private $isRequired;
+    private $isRequired = false;
     /** @var  boolean */
-    private $isTemporal;
+    private $isTemporal = false;
     private $name;
     private $notes;
     private $type;
@@ -53,6 +59,22 @@ class Attribute
     public function setAlias($alias)
     {
         $this->alias = $alias;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEntity()
+    {
+        return $this->entity;
+    }
+
+    /**
+     * @param mixed $entity
+     */
+    public function setEntity($entity)
+    {
+        $this->entity = $entity;
     }
 
     /**
@@ -124,7 +146,7 @@ class Attribute
      */
     public function setIsRequired($isRequired)
     {
-        $this->isRequired = $isRequired;
+        $this->isRequired = filter_var($isRequired, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
@@ -132,7 +154,7 @@ class Attribute
      */
     public function setIsTemporal($isTemporal)
     {
-        $this->isTemporal = $isTemporal;
+        $this->isTemporal = filter_var($isTemporal, FILTER_VALIDATE_BOOLEAN);
     }
 
 

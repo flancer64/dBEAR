@@ -26,6 +26,7 @@ use dBEAR\Schema\Meta\TableA;
 use dBEAR\Schema\Meta\TableB;
 use dBEAR\Schema\Meta\TableE;
 use dBEAR\Xml\Parser;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
 class Bear
@@ -34,8 +35,13 @@ class Bear
     const META_NAME_LENGTH  = 64;
     /** @var  \dBEAR\Schema\Domain\Base */
     private $base;
-    /** @var  \Doctrine\DBAL\Schema\AbstractSchemaManager */
-    private $schemaMan;
+    /** @var  \Doctrine\DBAL\Connection */
+    private $connection;
+
+    function __construct(Connection $conn)
+    {
+        $this->connection = $conn;
+    }
 
     /**
      * Create META tables in the appropriate order.
@@ -80,15 +86,15 @@ class Bear
 
     public function metaUpdateStructure()
     {
-        if (is_null($this->schemaMan)) {
-            $processor = new Processor($this->schemaMan);
+        if (!is_null($this->connection)) {
+            $processor = new Processor($this->connection);
             if (!is_null($this->base)) {
-                $processor->bubuBase($this->base);
+                $processor->addBaseVersion($this->base);
             } else {
                 throw new BearException('Base structure is not initiated.', BearException::ERR_BASE_IS_NULL);
             }
         } else {
-            throw new BearException('Doctrine schema manager is not initiated.', BearException::ERR_BASE_IS_NULL);
+            throw new BearException('Doctrine connection is not initiated.', BearException::ERR_CONNECTION_IS_NULL);
         }
     }
 
