@@ -38,6 +38,8 @@ class Processor
 {
     /** @var  Connection */
     private $connection;
+    /** @var  Base */
+    private $currentBase;
     /** @var  EntityManager */
     private $entityManager;
     /** @var array */
@@ -60,7 +62,7 @@ class Processor
     private $schemaTables;
     /** @var array */
     private $schemaViews;
-    private $tblAttributes;
+    private $tblAttributeRegistries;
     private $tblEntityRegistries;
 
     function __construct(Connection $connection)
@@ -74,15 +76,7 @@ class Processor
         $path                = str_replace($search, $replace, __DIR__);
         $config              = Setup::createAnnotationMetadataConfiguration(array($path), $isDevMode);
         $this->entityManager = EntityManager::create($this->connection, $config);
-        $this->repoAttr      = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Attribute');
-        $this->repoBase      = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Base');
-        $this->repoEntity    = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Entity');
-        //$this->repoRelation= $this->entityManager->getRepository('\dBEAR\Schema\Domain\Relation');
-        /** Load META data. */
-        /** TODO: create associative array to search entries by alias */
-        $this->metaAttr   = $this->repoAttr->findAll();
-        $this->metaBase   = $this->repoBase->findAll();
-        $this->metaEntity = $this->repoEntity->findAll();
+        $this->initLoadMeta();
         /** load current schema */
         $tables             = $this->schemaMan->listTableNames();
         $this->schemaTables = array_flip($tables);
@@ -92,45 +86,83 @@ class Processor
 
     public function addBaseVersion(Base $base)
     {
-        /** TODO: transaction should be used here */
-        foreach ($base->getEntities() as $oneEntity) {
-            /** @var $oneEntity Entity */
-            $tblEntityRegistry = $this->generateEntityRegistry($oneEntity);
-            if (!isset($this->metaEntity[$oneEntity->getAlias()])) {
-                /** add new entity register to DB */
-                try {
-                    $this->schemaMan->createTable($tblEntityRegistry);
-                } catch (\Exception $e) {
-                    echo $e->getMessage() . "\n";
+        /** clear registries */
+        $this->tblAttributeRegistries = array();
+        $this->tblEntityRegistries    = array();
+        $this->currentBase            = $base;
+        /** check version */
+        $existBase = $this->repoBase->find($base->getVersion());
+        if (is_null($existBase)) {
+            /** wrap all activity into transaction */
+            $this->entityManager->getConnection()->beginTransaction();
+            try {
+                foreach ($this->currentBase->getEntities() as $oneEntity) {
+                    /** @var $oneEntity Entity */
+                    $this->addBaseEntity($oneEntity);
                 }
+                /** registry new version */
+                $metaBase = new Base();
+                $metaBase->setVersion($this->currentBase->getVersion());
+                $metaBase->setXmlSchema('schema');
+                $this->entityManager->persist($metaBase);
+                $this->entityManager->flush();
+                $this->entityManager->getConnection()->commit();
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+                $this->entityManager->getConnection()->rollBack();
             }
-            $this->tblEntityRegistries[$tblEntityRegistry->getName()] = $tblEntityRegistry;
-            /** Generate Attributes for the Entity */
-            foreach ($oneEntity->getAttributes() as $oneAttr) {
-                /** @var $oneAttr Attribute */
-                $tblAttrRegistry = $this->generateAttributeRegistry($oneAttr);
-                if (!isset($this->metaAttr[$oneAttr->getAlias()])) {
-                    /** add new attribute register to DB */
-                    try {
-                        $this->schemaMan->createTable($tblAttrRegistry);
-                    } catch (\Exception $e) {
-                        echo $e->getMessage() . "\n";
-                    }
-                }
-                $this->tblAttributes[$tblAttrRegistry->getName()] = $tblAttrRegistry;
-                /** create views for temporal attributes */
-                if ($oneAttr->isTemporal()) {
-                    /** skip temporal attrs */
+        }
+    }
+
+    private function addBaseEntity(Entity $entity)
+    {
+        $tblEntityRegistry = $this->generateEntityRegistry($entity);
+        if (!isset($this->metaEntity[$entity->getAlias()])) {
+            /** add new entity register to DB */
+            $this->schemaMan->createTable($tblEntityRegistry);
+            /** add new Entity to META */
+            $metaEntity = new Entity();
+            $metaEntity->setAlias($entity->getAlias());
+            $metaEntity->setNotes($entity->getNotes());
+            $this->entityManager->persist($metaEntity);
+        }
+        $this->tblEntityRegistries[$tblEntityRegistry->getName()] = $tblEntityRegistry;
+        /** Generate Attributes for the Entity */
+        foreach ($entity->getAttributes() as $oneAttr) {
+            $this->addBaseEntityAttribute($oneAttr);
+        }
+        /** Generate view for the last version of the entity */
+        $viewEntityLast = $this->generateEntityActual($entity);
+        $this->schemaMan->dropAndCreateView($viewEntityLast);
+    }
+
+    private function addBaseEntityAttribute(Attribute $attr)
+    {
+        /** @var $attr Attribute */
+        $tblAttrRegistry = $this->generateAttributeRegistry($attr);
+        if (!isset($this->metaAttr[$attr->getAlias()])) {
+            /** add new attribute register to DB */
+            $this->schemaMan->createTable($tblAttrRegistry);
+            /** add new Attribute to META */
+            $metaAttr = new Attribute();
+            $metaAttr->setAlias($attr->getAlias());
+            /** @var  $metaEntity Entity */
+            $metaEntity = $this->repoEntity->find($attr->getEntity());
+            $metaAttr->setEntity($metaEntity->getAlias());
+            $metaAttr->setIsRequired($attr->isRequired());
+            $metaAttr->setIsTemporal($attr->isTemporal());
+            $metaAttr->setName($attr->getName());
+            $metaAttr->setType($attr->getType());
+            $this->entityManager->persist($metaAttr);
+        }
+        $this->tblAttributeRegistries[$tblAttrRegistry->getName()] = $tblAttrRegistry;
+        /** create views for temporal attributes */
+        if ($attr->isTemporal()) {
+            /** skip temporal attrs */
 //                    $viewAttrTs = $this->generateAttributeViewTs($oneAttr);
 //                    $this->schemaMan->dropAndCreateView($viewAttrTs);
 //                    $viewAttrAct = $this->generateAttributeViewAct($oneAttr);
 //                    $this->schemaMan->dropAndCreateView($viewAttrAct);
-                }
-            }
-            /** Generate view for the last version of the entity */
-            $viewEntityLast = $this->generateEntityActual($oneEntity);
-            $this->schemaMan->dropAndCreateView($viewEntityLast);
-
         }
     }
 
@@ -189,11 +221,11 @@ class Processor
 
     private function generateEntityActual(Entity $entity)
     {
-        $viewName    = TableE::getActualName($entity->getAlias());
+        $viewName    = TableE::getVersionViewName($entity->getAlias(), $this->currentBase->getVersion());
         $tblEntity   = TableE::getRegistryName($entity->getAlias());
         $colEntityId = TableE::getRegistryColId();
         /** compose SQL statement */
-        $cols  = "$tblEntity.$colEntityId  AS ". TableE::getRegistryColId();
+        $cols  = "$tblEntity.$colEntityId  AS " . TableE::getRegistryColId();
         $joins = '';
         foreach ($entity->getAttributes() as $attr) {
             /** @var  $attr Attribute */
@@ -217,5 +249,34 @@ class Processor
         $result->addColumn(TableE::getRegistryColId(), Type::INTEGER, array('unsigned' => true));
         $result->setPrimaryKey(array(TableE::getRegistryColId()));
         return $result;
+    }
+
+    private function initLoadMeta()
+    {
+        $this->repoAttr   = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Attribute');
+        $this->repoBase   = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Base');
+        $this->repoEntity = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Entity');
+        //$this->repoRelation= $this->entityManager->getRepository('\dBEAR\Schema\Domain\Relation');
+        /** Load Attributes META data */
+        $metaAttr       = $this->repoAttr->findAll();
+        $this->metaAttr = array();
+        foreach ($metaAttr as $oneAttr) {
+            /** @var $oneAttr Attribute */
+            $this->metaAttr[$oneAttr->getAlias()] = $oneAttr;
+        }
+        /** Load Base META data */
+        $metaBase       = $this->repoBase->findAll();
+        $this->metaBase = array();
+        foreach ($metaBase as $oneBase) {
+            /** @var $oneBase Base */
+            $this->metaBase[$oneBase->getVersion()] = $oneBase;
+        }
+        /** Load Entities META data */
+        $metaEntity       = $this->repoEntity->findAll();
+        $this->metaEntity = array();
+        foreach ($metaEntity as $oneEntity) {
+            /** @var $oneEntity Entity */
+            $this->metaEntity[$oneEntity->getAlias()] = $oneEntity;
+        }
     }
 }

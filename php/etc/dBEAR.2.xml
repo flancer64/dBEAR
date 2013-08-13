@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tns:dBEAR xmlns:tns="http://www.flancer64.com/dBEAR/Schema"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://www.flancer64.com/dBEAR/Schema ../etc/dBEAR.xsd " version="1">
+           xsi:schemaLocation="http://www.flancer64.com/dBEAR/Schema ../etc/dBEAR.xsd " version="2">
     <tns:entities>
         <tns:entity alias="cust">
             <tns:notes>Customer notes</tns:notes>
@@ -16,10 +16,20 @@
                     <tns:name>NameLast</tns:name>
                     <tns:notes>Customer's Last Name.</tns:notes>
                 </tns:attribute>
-                <tns:attribute alias="email" temporal="false" required="true">
+                <tns:attribute alias="phone" temporal="false" required="true">
                     <tns:type>String</tns:type>
-                    <tns:name>Email</tns:name>
-                    <tns:notes>Customer's email.</tns:notes>
+                    <tns:name>Phone</tns:name>
+                    <tns:notes>Customer's phone.</tns:notes>
+                </tns:attribute>
+                <tns:attribute alias="height" temporal="false" required="true">
+                    <tns:type>String</tns:type>
+                    <tns:name>Height</tns:name>
+                    <tns:notes>Рост.</tns:notes>
+                </tns:attribute>
+                <tns:attribute alias="class" temporal="false" required="true">
+                    <tns:type>String</tns:type>
+                    <tns:name>Class</tns:name>
+                    <tns:notes>Класс.</tns:notes>
                 </tns:attribute>
             </tns:attributes>
         </tns:entity>

@@ -35,14 +35,20 @@ class Attribute
     const XML_TYPE     = 'type';
     /** @Id @Column(type="string", length=8) */
     private $alias;
-    /** @Id @Column(type="string", length=8) */
+    /** @Id @Column(type="string", length=8)
+     * @ManyToOne(targetEntity="Entity", inversedBy="attributes")
+     * @JoinColumn(name="entity", referencedColumnName="alias")
+     */
     private $entity;
-    /** @var  boolean */
+    /** @Column(type="boolean", name="required") */
     private $isRequired = false;
-    /** @var  boolean */
+    /** @Column(type="boolean", name="temporal") */
     private $isTemporal = false;
+    /** @Column(type="string", length=64) */
     private $name;
+    /** @Column(type="string") */
     private $notes;
+    /** @Column(type="string") */
     private $type;
 
     /**
@@ -58,7 +64,7 @@ class Attribute
      */
     public function setAlias($alias)
     {
-        $this->alias = $alias;
+        $this->alias = strtolower(trim($alias));
     }
 
     /**

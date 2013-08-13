@@ -32,9 +32,18 @@ class Entity
     const XML_NOTES      = 'notes';
     /** @Id @Column(type="string", length=8) * */
     private $alias;
-    /** @var \dBEAR\Schema\Domain\Attribute[] */
-    private $attributes = array();
+    /**
+     * @var \Doctrine\Common\Collections\ArrayCollection
+     * @OneToMany(targetEntity="Attribute", mappedBy="entity")
+     */
+    private $attributes;
+    /** @Column(type="string") * */
     private $notes;
+
+    function __construct()
+    {
+        $this->attributes = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     /**
      * @return mixed
@@ -49,7 +58,7 @@ class Entity
      */
     public function setAlias($alias)
     {
-        $this->alias = $alias;
+        $this->alias = strtolower(trim($alias));
     }
 
     public function getAttribute($alias)

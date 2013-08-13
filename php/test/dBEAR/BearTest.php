@@ -27,6 +27,26 @@ use dBEAR\TestUnit;
 require_once('./TestUnit.php');
 class BearTest extends TestUnit
 {
+    public function test_dbDrop()
+    {
+        self::_getDbConnection()->exec('drop database dbear01');
+        self::_getDbConnection()->exec('CREATE DATABASE `dbear01` character set utf8 COLLATE utf8_general_ci');
+    }
+
+    public function test_dbInitData()
+    {
+        for ($i = 1; $i <= 100; $i++) {
+            self::_getDbConnection()->exec("insert into e_cust (id) VALUES ($i)");
+            self::_getDbConnection()->exec("insert into a_cust_class (`entity_id`, `value`) VALUES ($i, 'class_$i')");
+            self::_getDbConnection()->exec("insert into a_cust_email (`entity_id`, `value`) VALUES ($i, 'email_$i')");
+            self::_getDbConnection()->exec("insert into a_cust_height (`entity_id`, `value`) VALUES ($i, 'height_$i')");
+            self::_getDbConnection()->exec("insert into a_cust_nfirst (`entity_id`, `value`) VALUES ($i, 'nfirst_$i')");
+            self::_getDbConnection()->exec("insert into a_cust_nlast (`entity_id`, `value`) VALUES ($i, 'nlast_$i')");
+            self::_getDbConnection()->exec("insert into a_cust_phone (`entity_id`, `value`) VALUES ($i, 'phone_$i')");
+
+        }
+    }
+
     public function test_metaTablesDropCreate()
     {
         Bear::metaTablesDrop(self::_getDbSchemaManager());
@@ -41,14 +61,20 @@ class BearTest extends TestUnit
         } catch (BearException $e) {
             $this->assertEquals(BearException::ERR_BASE_IS_NULL, $e->getCode());
         }
+        /** version 1 schema */
         $bear->schemaLoad(self::getXmlSchemaFile());
         $this->assertNotNull($bear->getBase());
         $bear->metaUpdateStructure();
+        /** version 2 schema */
+        $bear->schemaLoad(self::getXmlSchemaFileV2());
+        $this->assertNotNull($bear->getBase());
+        $bear->metaUpdateStructure();
+
     }
 
     public function test_schemaLoad()
     {
-        $bear = new Bear(self::_getDbSchemaManager());
+        $bear = new Bear(self::_getDbConnection());
         $bear->schemaLoad(self::getXmlSchemaFile());
         $this->assertNotNull($bear->getBase());
     }

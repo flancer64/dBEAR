@@ -33,10 +33,10 @@ class Base
     const XML_VERSION  = 'version';
     /** @var \dBEAR\Schema\Domain\Entity[] */
     private $entities = array();
-    /** @Id @Column(type="text") * */
-    private $schema;
-    /** @Id @Column(type="integer") * */
+    /** @Id @Column(type="integer") */
     private $version;
+    /** @Column(type="text") */
+    private $xmlSchema;
 
     /**
      * @return array
@@ -67,22 +67,6 @@ class Base
     /**
      * @return mixed
      */
-    public function getSchema()
-    {
-        return $this->schema;
-    }
-
-    /**
-     * @param mixed $schema
-     */
-    public function setSchema($schema)
-    {
-        $this->schema = $schema;
-    }
-
-    /**
-     * @return mixed
-     */
     public function getVersion()
     {
         return $this->version;
@@ -94,5 +78,21 @@ class Base
     public function setVersion($version)
     {
         $this->version = $version;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getXmlSchema()
+    {
+        return $this->xmlSchema;
+    }
+
+    /**
+     * @param mixed $schema
+     */
+    public function setXmlSchema($schema)
+    {
+        $this->xmlSchema = $schema;
     }
 }

@@ -29,7 +29,7 @@ use Doctrine\DBAL\Types\Type;
 class TableB
 {
     const COL_ID     = Base::XML_VERSION;
-    const COL_SCHEMA = 'schema';
+    const COL_SCHEMA = 'xmlSchema';
     const NAME       = '_b';
 
     public static function generate()

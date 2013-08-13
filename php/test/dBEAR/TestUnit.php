@@ -54,6 +54,12 @@ class TestUnit extends \PHPUnit_Framework_TestCase
         return $result;
     }
 
+    public static function  getXmlSchemaFileV2()
+    {
+        $result = self::getProjectRootFolder() . 'etc/dBEAR.2.xml';
+        return $result;
+    }
+
     private static function getProjectRootFolder()
     {
         $result = str_replace('test' . DIRECTORY_SEPARATOR . 'dBEAR', '', __DIR__);

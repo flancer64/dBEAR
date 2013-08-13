@@ -35,6 +35,7 @@ class TableA
     const COL_IS_REQUIRED = Attribute::XML_REQUIRED;
     const COL_IS_TEMPORAL = Attribute::XML_TEMPORAL;
     const COL_NAME        = Attribute::XML_NAME;
+    const COL_NOTES       = Attribute::XML_NOTES;
     const COL_TYPE        = Attribute::XML_TYPE;
 
     public static function generate()
@@ -46,10 +47,13 @@ class TableA
         $result->addColumn(self::COL_IS_TEMPORAL, Type::BOOLEAN, array('comment' => 'Is this attribute temporal (need save all updates)?'));
         $result->addColumn(self::COL_IS_REQUIRED, Type::BOOLEAN, array('comment' => 'Is this attribute should contain value for all instances of the entity (is not nullable)?'));
         $result->addColumn(self::COL_TYPE, Type::STRING, array('comment' => 'SQL data type to store attribute values.'));
+        $result->addColumn(self::COL_NOTES, Type::STRING, array('notnull' => false, 'comment' => 'Human related
+        description of the entity.'));
         $result->setPrimaryKey(array(self::COL_ENTITY, self::COL_ALIAS));
         /** setup foreign keys */
         $tableE = TableE::generate();
-        $result->addForeignKeyConstraint($tableE, array(self::COL_ENTITY), array(TableE::COL_ALIAS));
+        // TODO: enable constraint
+        //$result->addForeignKeyConstraint($tableE, array(self::COL_ENTITY), array(TableE::COL_ALIAS));
         return $result;
     }
 
