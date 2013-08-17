@@ -1,0 +1,19 @@
+<ver:versions schemaVersion="3" xmlns:ver="http://www.flancer64.com/dBEAR/Versions">
+    <ver:entities>
+        <!--1 or more repetitions:-->
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+    </ver:entities>
+    <ver:relations>
+        <!--1 or more repetitions:-->
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+        <ver:entity alias="string" version="3"/>
+    </ver:relations>
+</ver:versions>

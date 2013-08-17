@@ -21,9 +21,14 @@
 
 namespace dBEAR\Schema\Meta;
 
+use dBEAR\Schema\Comparator\CompareEntities;
 use dBEAR\Schema\Domain\Attribute;
 use dBEAR\Schema\Domain\Base;
 use dBEAR\Schema\Domain\Entity;
+use dBEAR\Schema\Meta\Data\VersionsMap;
+use dBEAR\Xml\SchemaHandler;
+use dBEAR\Xml\SchemaHandlerTest;
+use dBEAR\Xml\VersionsHandler;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
@@ -39,15 +44,21 @@ class Processor
     /** @var  Connection */
     private $connection;
     /** @var  Base */
-    private $currentBase;
+    private $currentSchema;
+    /** @var  VersionsMap */
+    private $currentVersions;
     /** @var  EntityManager */
     private $entityManager;
-    /** @var array */
+    /** @var Attribute[] */
     private $metaAttr;
-    /** @var array */
+    /** @var Base[] */
     private $metaBase;
-    /** @var array */
+    /** @var Entity[] */
     private $metaEntity;
+    /** @var  Base */
+    private $previousSchema;
+    /** @var  VersionsMap */
+    private $previousVersions;
     /** @var  EntityRepository */
     private $repoAttr;
     /** @var  EntityRepository */
@@ -84,27 +95,31 @@ class Processor
 //        $this->schemaViews  = array_flip($views);
     }
 
-    public function addBaseVersion(Base $base)
+    public function addSchemaVersion(Base $base)
     {
         /** clear registries */
         $this->tblAttributeRegistries = array();
         $this->tblEntityRegistries    = array();
-        $this->currentBase            = $base;
-        /** check version */
-        $existBase = $this->repoBase->find($base->getVersion());
+        $this->currentSchema          = $base;
+        /** check version existence */
+        $existBase = $this->repoBase->find($this->currentSchema->getVersion());
         if (is_null($existBase)) {
+            /** add new schema versions and init previous versions */
+            $this->currentVersions = new VersionsMap();
+            $this->currentVersions->setSchemaVersion($this->currentSchema->getVersion());
+            $this->initPreviousVersion($this->currentSchema->getVersion());
             /** wrap all activity into transaction */
             $this->entityManager->getConnection()->beginTransaction();
             try {
-                foreach ($this->currentBase->getEntities() as $oneEntity) {
+                foreach ($this->currentSchema->getEntities() as $oneEntity) {
                     /** @var $oneEntity Entity */
                     $this->addBaseEntity($oneEntity);
                 }
-                /** registry new version */
-                $metaBase = new Base();
-                $metaBase->setVersion($this->currentBase->getVersion());
-                $metaBase->setXmlSchema('schema');
-                $this->entityManager->persist($metaBase);
+                /** registry new schema version */
+                $xmlHandler  = new VersionsHandler();
+                $xmlVersions = $xmlHandler->asXml($this->currentVersions);
+                $this->currentSchema->setXmlVersions($xmlVersions);
+                $this->entityManager->persist($this->currentSchema);
                 $this->entityManager->flush();
                 $this->entityManager->getConnection()->commit();
             } catch (\Exception $e) {
@@ -114,26 +129,48 @@ class Processor
         }
     }
 
+    public function addSchemaVersionFromFile($filename)
+    {
+        $xmlHandler = new SchemaHandler();
+        $base       = $xmlHandler->parseXmlFile($filename);
+        $this->addSchemaVersion($base);
+    }
+
+    public function addSchemaVersionFromXml($text)
+    {
+        $xmlHandler = new SchemaHandler();
+        $base       = $xmlHandler->parseXmlText($text);
+        $this->addSchemaVersion($base);
+    }
+
     private function addBaseEntity(Entity $entity)
     {
-        $tblEntityRegistry = $this->generateEntityRegistry($entity);
-        if (!isset($this->metaEntity[$entity->getAlias()])) {
-            /** add new entity register to DB */
-            $this->schemaMan->createTable($tblEntityRegistry);
-            /** add new Entity to META */
-            $metaEntity = new Entity();
-            $metaEntity->setAlias($entity->getAlias());
-            $metaEntity->setNotes($entity->getNotes());
-            $this->entityManager->persist($metaEntity);
+        /** compare new entity and previous entity */
+        $prevVersion = $this->previousVersions->getEntityVersion($entity->getAlias());
+        if (!$this->isEntityEqualToOtherVersion($entity, $prevVersion)) {
+            /** add new entity or update existed */
+            $tblEntityRegistry = $this->generateEntityRegistry($entity);
+            if (!isset($this->metaEntity[$entity->getAlias()])) {
+                /** add new entity register to DB */
+                $this->schemaMan->createTable($tblEntityRegistry);
+                /** add new Entity to META */
+                $metaEntity = new Entity();
+                $metaEntity->setAlias($entity->getAlias());
+                $metaEntity->setNotes($entity->getNotes());
+                $this->entityManager->persist($metaEntity);
+            }
+            $this->tblEntityRegistries[$tblEntityRegistry->getName()] = $tblEntityRegistry;
+            /** Generate Attributes for the Entity */
+            foreach ($entity->getAttributes() as $oneAttr) {
+                $this->addBaseEntityAttribute($oneAttr);
+            }
+            /** Generate view for the last version of the entity */
+            $viewEntityLast = $this->generateEntityActual($entity);
+            $this->schemaMan->dropAndCreateView($viewEntityLast);
+        } else {
+            /** new entity is the same as previous entity */
+            $this->currentVersions->addEntity($entity->getAlias(), $prevVersion);
         }
-        $this->tblEntityRegistries[$tblEntityRegistry->getName()] = $tblEntityRegistry;
-        /** Generate Attributes for the Entity */
-        foreach ($entity->getAttributes() as $oneAttr) {
-            $this->addBaseEntityAttribute($oneAttr);
-        }
-        /** Generate view for the last version of the entity */
-        $viewEntityLast = $this->generateEntityActual($entity);
-        $this->schemaMan->dropAndCreateView($viewEntityLast);
     }
 
     private function addBaseEntityAttribute(Attribute $attr)
@@ -181,7 +218,13 @@ class Processor
         }
         /** add constraints */
         $tblForeign = $this->tblEntityRegistries[TableE::getRegistryName($attribute->getEntity())];
-        $result->addForeignKeyConstraint($tblForeign, array(TableA::getRegistryColEntity()), array(TableE::getRegistryColId()));
+        $options    = array('onDelete' => 'CASCADE');
+        $result->addForeignKeyConstraint(
+            $tblForeign,
+            array(TableA::getRegistryColEntity()),
+            array(TableE::getRegistryColId()),
+            $options
+        );
         return $result;
     }
 
@@ -221,7 +264,7 @@ class Processor
 
     private function generateEntityActual(Entity $entity)
     {
-        $viewName    = TableE::getVersionViewName($entity->getAlias(), $this->currentBase->getVersion());
+        $viewName    = TableE::getVersionViewName($entity->getAlias(), $this->currentSchema->getVersion());
         $tblEntity   = TableE::getRegistryName($entity->getAlias());
         $colEntityId = TableE::getRegistryColId();
         /** compose SQL statement */
@@ -238,6 +281,8 @@ class Processor
         }
         $sql    = "SELECT $cols FROM $tblEntity $joins";
         $result = new View($viewName, $sql);
+        /** version new view */
+        $this->currentVersions->addEntity($entity->getAlias(), $this->currentSchema->getVersion());
         return $result;
     }
 
@@ -251,6 +296,17 @@ class Processor
         return $result;
     }
 
+    /**
+     * Create META tables in the appropriate order.
+     * @param AbstractSchemaManager $schemaMan
+     */
+    private function generateMetaTables()
+    {
+        $this->schemaMan->createTable(TableB::generate());
+        $this->schemaMan->createTable(TableE::generate());
+        $this->schemaMan->createTable(TableA::generate());
+    }
+
     private function initLoadMeta()
     {
         $this->repoAttr   = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Attribute');
@@ -258,7 +314,13 @@ class Processor
         $this->repoEntity = $this->entityManager->getRepository('\dBEAR\Schema\Domain\Entity');
         //$this->repoRelation= $this->entityManager->getRepository('\dBEAR\Schema\Domain\Relation');
         /** Load Attributes META data */
-        $metaAttr       = $this->repoAttr->findAll();
+        try {
+            $metaAttr = $this->repoAttr->findAll();
+        } catch (\Exception $e) {
+            /** in case of the new DB */
+            $this->generateMetaTables();
+            $metaAttr = $this->repoAttr->findAll();
+        }
         $this->metaAttr = array();
         foreach ($metaAttr as $oneAttr) {
             /** @var $oneAttr Attribute */
@@ -269,6 +331,10 @@ class Processor
         $this->metaBase = array();
         foreach ($metaBase as $oneBase) {
             /** @var $oneBase Base */
+            /** convert XML Schema to PHP Objects and copy entities info */
+            $xmlHandler = new SchemaHandler();
+            $handled    = $xmlHandler->parseXmlText($oneBase->getXmlSchema());
+            $oneBase->setEntities($handled->getEntities());
             $this->metaBase[$oneBase->getVersion()] = $oneBase;
         }
         /** Load Entities META data */
@@ -278,5 +344,38 @@ class Processor
             /** @var $oneEntity Entity */
             $this->metaEntity[$oneEntity->getAlias()] = $oneEntity;
         }
+    }
+
+    /**
+     * Init versions for entities & relations for the previous dBEAR schema.
+     * @param $current
+     */
+    private function initPreviousVersion($current)
+    {
+        $this->previousVersions = new VersionsMap();
+        /** @var  $last Base */
+        $last = end($this->metaBase);
+        if ($last) {
+            $xml                    = $last->getXmlVersions();
+            $xmlHandler             = new VersionsHandler();
+            $this->previousVersions = $xmlHandler->parseXmlText($xml);
+        }
+    }
+
+    /**
+     * Get other entity by version and compare with given (except notes, etc.).
+     * @param Entity $entity
+     * @param null   $version
+     * @return bool
+     */
+    private function isEntityEqualToOtherVersion(Entity $entity, $version = null)
+    {
+        $result = false;
+        if (isset($this->metaBase[$version])) {
+            $preBase   = $this->metaBase[$version];
+            $preEntity = $preBase->getEntity($entity->getAlias());
+            $result    = CompareEntities::equalsEnough($entity, $preEntity);
+        }
+        return $result;
     }
 }

@@ -27,6 +27,7 @@ namespace dBEAR\Schema\Domain;
 class Attribute
 {
     const NAME         = 'attribute';
+    /** TODO: move XML related constants to XML Handlers */
     const XML_ALIAS    = 'alias';
     const XML_NAME     = 'name';
     const XML_NOTES    = 'notes';

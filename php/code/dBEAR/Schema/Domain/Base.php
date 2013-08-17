@@ -29,6 +29,7 @@ use dBEAR\Schema\Domain\Entity;
  */
 class Base
 {
+    /** TODO: move to XML package */
     const XML_ENTITIES = 'entities';
     const XML_VERSION  = 'version';
     /** @var \dBEAR\Schema\Domain\Entity[] */
@@ -37,6 +38,8 @@ class Base
     private $version;
     /** @Column(type="text") */
     private $xmlSchema;
+    /** @Column(type="text") */
+    private $xmlVersions;
 
     /**
      * @return array
@@ -94,5 +97,21 @@ class Base
     public function setXmlSchema($schema)
     {
         $this->xmlSchema = $schema;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getXmlVersions()
+    {
+        return $this->xmlVersions;
+    }
+
+    /**
+     * @param mixed $xmlVersions
+     */
+    public function setXmlVersions($xmlVersions)
+    {
+        $this->xmlVersions = $xmlVersions;
     }
 }

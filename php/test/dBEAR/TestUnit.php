@@ -27,8 +27,9 @@ use Doctrine\DBAL\DriverManager;
 
 class TestUnit extends \PHPUnit_Framework_TestCase
 {
+    const TEST_DB = 'dbear01';
     /**
-     * @var \Doctrine\DBAL\Connection
+     * @var \dBEAR\DBAL\Connection
      */
     private static $_dbConnection;
     /**
@@ -48,15 +49,27 @@ class TestUnit extends \PHPUnit_Framework_TestCase
         $clTest->register();
     }
 
-    public static function  getXmlSchemaFile()
+    public static function  getXmlSchemaFileV1()
     {
-        $result = self::getProjectRootFolder() . 'etc/dBEAR.xml';
+        $result = self::getProjectRootFolder() . 'test/etc/xml/schema.v1.xml';
         return $result;
     }
 
     public static function  getXmlSchemaFileV2()
     {
-        $result = self::getProjectRootFolder() . 'etc/dBEAR.2.xml';
+        $result = self::getProjectRootFolder() . 'test/etc/xml/schema.v2.xml';
+        return $result;
+    }
+
+    public static function  getXmlSchemaFileV3()
+    {
+        $result = self::getProjectRootFolder() . 'test/etc/xml/schema.v3.xml';
+        return $result;
+    }
+
+    public static function  getXmlVersionsFile()
+    {
+        $result = self::getProjectRootFolder() . 'test/etc/xml/versions.xml';
         return $result;
     }
 
@@ -67,15 +80,14 @@ class TestUnit extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Doctrine\DBAL\Connection
+     * @return \dBEAR\DBAL\Connection
      */
-    protected
-    function _getDbConnection()
+    protected function _getDbConnection($renew = false)
     {
-        if (is_null(self::$_dbConnection)) {
+        if (is_null(self::$_dbConnection) || $renew) {
             $config              = new Configuration();
             $connectionParams    = array(
-                'dbname'   => 'dbear01',
+                'dbname'   => self::TEST_DB,
                 'user'     => 'root',
                 'password' => 'MaryRoot',
                 'host'     => 'localhost',
@@ -89,8 +101,7 @@ class TestUnit extends \PHPUnit_Framework_TestCase
     /**
      * @return \Doctrine\DBAL\Schema\AbstractSchemaManager
      */
-    protected
-    function _getDbSchemaManager()
+    protected function _getDbSchemaManager()
     {
         if (is_null(self::$_dbSchemaManager)) {
             self::$_dbSchemaManager = $this->_getDbConnection()->getSchemaManager();

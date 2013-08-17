@@ -42,7 +42,7 @@ $connectionParams = array(
 $conn      = \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
 $schemaMan = $conn->getSchemaManager();
 //Bear::metaTablesDrop($schemaMan);
-//Bear::metaTablesCreate($schemaMan);
+//Bear::generateMetaTables($schemaMan);
 
 Bear::schemaLoad('C:\work\projects\dBEAR\dbear.ws\php\code\dBEAR.xml');
 

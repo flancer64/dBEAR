@@ -24,22 +24,29 @@ namespace dBEAR\Xml;
 use dBEAR\TestUnit;
 
 require_once('../TestUnit.php');
-class ParserTest extends TestUnit
+class SchemaHandlerTest extends TestUnit
 {
 
     public function test_parseXmlFile()
     {
-        $file = '../../../etc/dBEAR.xml';
-        $base = Parser::parseXmlFile($file);
+        $file       = self::getXmlSchemaFileV1();
+        $xmlHandler = new SchemaHandler();
+        $base       = $xmlHandler->parseXmlFile($file);
         $this->assertNotNull($base);
         $this->assertNotNull($base->getVersion());
+        $this->assertNotNull($base->getXmlSchema());
         $this->assertTrue(is_array($base->getEntities()));
-        /** get Customer entity */
-        $entityCust = $base->getEntity('cust');
-        $this->assertNotNull($entityCust);
-        $this->assertTrue(is_array($entityCust->getAttributes()));
-        $attrCustNameFirst = $entityCust->getAttribute('nfirst');
-        $this->assertNotNull($attrCustNameFirst);
-        1 + 1;
     }
+
+    public function test_parseXmlText()
+    {
+        $file       = self::getXmlSchemaFileV1();
+        $text        = file_get_contents($file);
+        $xmlHandler = new SchemaHandler();
+        $base       = $xmlHandler->parseXmlText($text);
+        $this->assertNotNull($base);
+        $this->assertNotNull($base->getVersion());
+        $this->assertNotNull($base->getXmlSchema());
+    }
+
 }

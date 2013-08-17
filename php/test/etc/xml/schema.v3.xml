@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tns:dBEAR xmlns:tns="http://www.flancer64.com/dBEAR/Schema"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.flancer64.com/dBEAR/Schema ../etc/dBEAR.xsd " version="3">
+    <tns:entities>
+        <tns:entity alias="cust">
+            <tns:notes>Customer</tns:notes>
+            <tns:attributes>
+                <tns:attribute alias="nfirst" temporal="false" required="true">
+                    <tns:type>String</tns:type>
+                    <tns:name>NameFirst</tns:name>
+                    <tns:notes>Customer's first name.</tns:notes>
+                </tns:attribute>
+                <tns:attribute alias="nlast" temporal="false" required="true">
+                    <tns:type>String</tns:type>
+                    <tns:name>NameLast</tns:name>
+                    <tns:notes>Customer's Last Name.</tns:notes>
+                </tns:attribute>
+                <tns:attribute alias="email" temporal="false" required="true">
+                    <tns:type>String</tns:type>
+                    <tns:name>Email</tns:name>
+                    <tns:notes>Customer's email.</tns:notes>
+                </tns:attribute>
+            </tns:attributes>
+        </tns:entity>
+        <tns:entity alias="addr">
+            <tns:notes>Address</tns:notes>
+            <tns:attributes>
+                <tns:attribute alias="zip" temporal="false" required="false">
+                    <tns:type>String</tns:type>
+                    <tns:name>Zip</tns:name>
+                    <tns:notes>ZIP code or postal code.</tns:notes>
+                </tns:attribute>
+                <tns:attribute alias="country" temporal="false" required="false">
+                    <tns:type>String</tns:type>
+                    <tns:name>CountryCode</tns:name>
+                    <tns:notes>2 letters code of the country.</tns:notes>
+                </tns:attribute>
+            </tns:attributes>
+        </tns:entity>
+    </tns:entities>
+</tns:dBEAR>

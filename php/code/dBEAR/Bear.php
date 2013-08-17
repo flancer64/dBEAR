@@ -25,7 +25,7 @@ use dBEAR\Schema\Meta\Processor;
 use dBEAR\Schema\Meta\TableA;
 use dBEAR\Schema\Meta\TableB;
 use dBEAR\Schema\Meta\TableE;
-use dBEAR\Xml\Parser;
+use dBEAR\Xml\SchemaHandler;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 
@@ -55,20 +55,6 @@ class Bear
     }
 
     /**
-     * Drop META tables in the appropriate order.
-     * @param AbstractSchemaManager $schemaMan
-     */
-    public static function metaTablesDrop(AbstractSchemaManager $schemaMan)
-    {
-        // TODO: move metaTablesDropCreate to private methods
-        $tables = $schemaMan->listTableNames();
-        $tables = array_flip($tables);
-        if (isset($tables[TableA::getName()])) $schemaMan->dropTable(TableA::getName());
-        if (isset($tables[TableE::getName()])) $schemaMan->dropTable(TableE::getName());
-        if (isset($tables[TableB::getName()])) $schemaMan->dropTable(TableB::getName());
-    }
-
-    /**
      * @return \dBEAR\Schema\Domain\Base
      */
     public function getBase()
@@ -89,7 +75,7 @@ class Bear
         if (!is_null($this->connection)) {
             $processor = new Processor($this->connection);
             if (!is_null($this->base)) {
-                $processor->addBaseVersion($this->base);
+                $processor->addSchemaVersion($this->base);
             } else {
                 throw new BearException('Base structure is not initiated.', BearException::ERR_BASE_IS_NULL);
             }
@@ -101,6 +87,6 @@ class Bear
     public function schemaLoad($xmlFile)
     {
         /** @var  $base \dBEAR\Schema\Domain\Base */
-        $this->base = Parser::parseXmlFile($xmlFile);
+        $this->base = SchemaHandler::parseXmlFile($xmlFile);
     }
 }

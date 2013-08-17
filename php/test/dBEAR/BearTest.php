@@ -20,62 +20,36 @@
 
 namespace dBEAR;
 
-use dBEAR\Bear;
-use dBEAR\Exception\BearException;
 use dBEAR\TestUnit;
 
 require_once('./TestUnit.php');
 class BearTest extends TestUnit
 {
-    public function test_dbDrop()
-    {
-        self::_getDbConnection()->exec('drop database dbear01');
-        self::_getDbConnection()->exec('CREATE DATABASE `dbear01` character set utf8 COLLATE utf8_general_ci');
-    }
+
 
     public function test_dbInitData()
     {
+        /** Customer data */
         for ($i = 1; $i <= 100; $i++) {
             self::_getDbConnection()->exec("insert into e_cust (id) VALUES ($i)");
-            self::_getDbConnection()->exec("insert into a_cust_class (`entity_id`, `value`) VALUES ($i, 'class_$i')");
             self::_getDbConnection()->exec("insert into a_cust_email (`entity_id`, `value`) VALUES ($i, 'email_$i')");
-            self::_getDbConnection()->exec("insert into a_cust_height (`entity_id`, `value`) VALUES ($i, 'height_$i')");
             self::_getDbConnection()->exec("insert into a_cust_nfirst (`entity_id`, `value`) VALUES ($i, 'nfirst_$i')");
             self::_getDbConnection()->exec("insert into a_cust_nlast (`entity_id`, `value`) VALUES ($i, 'nlast_$i')");
-            self::_getDbConnection()->exec("insert into a_cust_phone (`entity_id`, `value`) VALUES ($i, 'phone_$i')");
-
+        }
+        /** Address data */
+        for ($i = 1; $i <= 100; $i++) {
+            self::_getDbConnection()->exec("insert into e_addr (id) VALUES ($i)");
+            self::_getDbConnection()->exec("insert into a_addr_country (`entity_id`, `value`) VALUES ($i, 'country_$i')");
+            self::_getDbConnection()->exec("insert into a_addr_zip (`entity_id`, `value`) VALUES ($i, 'zip_$i')");
         }
     }
 
-    public function test_metaTablesDropCreate()
+    public function test_tmp()
     {
-        Bear::metaTablesDrop(self::_getDbSchemaManager());
-        Bear::metaTablesCreate(self::_getDbSchemaManager());
-    }
-
-    public function test_metaUpdateStructure()
-    {
-        $bear = new Bear(self::_getDbConnection());
-        try {
-            $bear->metaUpdateStructure();
-        } catch (BearException $e) {
-            $this->assertEquals(BearException::ERR_BASE_IS_NULL, $e->getCode());
+        $conn = $this->_getDbConnection();
+        $stmt = $conn->query("select * from e_cust_2");
+        while ($row = $stmt->fetch()) {
+            print_r($row);
         }
-        /** version 1 schema */
-        $bear->schemaLoad(self::getXmlSchemaFile());
-        $this->assertNotNull($bear->getBase());
-        $bear->metaUpdateStructure();
-        /** version 2 schema */
-        $bear->schemaLoad(self::getXmlSchemaFileV2());
-        $this->assertNotNull($bear->getBase());
-        $bear->metaUpdateStructure();
-
-    }
-
-    public function test_schemaLoad()
-    {
-        $bear = new Bear(self::_getDbConnection());
-        $bear->schemaLoad(self::getXmlSchemaFile());
-        $this->assertNotNull($bear->getBase());
     }
 }

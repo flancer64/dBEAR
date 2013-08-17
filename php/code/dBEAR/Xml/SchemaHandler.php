@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * Parses XML structure and converts to PHP objects.
+ * Perform dual parsing and generation between XML schema and PHP objects.
  * User: Alex Gusev <flancer64@gmail.com>
  */
 
@@ -26,13 +26,14 @@ use dBEAR\Schema\Domain\Attribute;
 use dBEAR\Schema\Domain\Base;
 use dBEAR\Schema\Domain\Entity;
 
-class Parser
+class SchemaHandler
 {
     /**
+     * Load dBEAR schema from DOMDocument.
      * @param \DOMDocument $doc
      * @return Base
      */
-    public static function parseXmlDocument(\DOMDocument $doc)
+    public function parseXmlDocument(\DOMDocument $doc)
     {
         $result = new Base();
         /** dBEAR: root node */
@@ -47,26 +48,41 @@ class Parser
             $localName = $child->localName;
             switch ($localName) {
                 case Base::XML_ENTITIES:
-                    $entities = self::xmlParseAllEntities($child);
+                    $entities = $this->xmlParseAllEntities($child);
                     $result->setEntities($entities);
                     break;
             }
         }
+        /** save current schema as attribute */
+        $result->setXmlSchema($doc->saveXML());
         return $result;
     }
 
     /**
+     * Load dBEAR schema from XML file.
      * @param $filename
      * @return Base
      */
-    public static function parseXmlFile($filename)
+    public function parseXmlFile($filename)
     {
         $doc = new \DOMDocument();
         $doc->load($filename);
-        return self::parseXmlDocument($doc);
+        return $this->parseXmlDocument($doc);
     }
 
-    private static function xmlParseAllAttributes($node)
+    /**
+     * Load dBEAR schema from XML text.
+     * @param $text
+     * @return Base
+     */
+    public function parseXmlText($text)
+    {
+        $doc = new \DOMDocument();
+        $doc->loadXML($text);
+        return $this->parseXmlDocument($doc);
+    }
+
+    private function xmlParseAllAttributes($node)
     {
         $result = array();
         /** @var  $children \DOMNodeList */
@@ -76,7 +92,7 @@ class Parser
             $localName = $child->localName;
             switch ($localName) {
                 case Attribute::NAME:
-                    $attribute                      = self::xmlParseAttribute($child);
+                    $attribute                      = $this->xmlParseAttribute($child);
                     $result[$attribute->getAlias()] = $attribute;
                     break;
             }
@@ -88,7 +104,7 @@ class Parser
      * @param $node
      * @return array
      */
-    private static function xmlParseAllEntities($node)
+    private function xmlParseAllEntities($node)
     {
         $result = array();
         /** @var  $children \DOMNodeList */
@@ -98,7 +114,7 @@ class Parser
             $localName = $child->localName;
             switch ($localName) {
                 case Entity::NAME:
-                    $entity                      = self::xmlParseEntity($child);
+                    $entity                      = $this->xmlParseEntity($child);
                     $result[$entity->getAlias()] = $entity;
                     break;
             }
@@ -106,7 +122,7 @@ class Parser
         return $result;
     }
 
-    private static function xmlParseAttribute(\DOMElement $node)
+    private function xmlParseAttribute(\DOMElement $node)
     {
         $result = new Attribute();
         /** parse node's attributes */
@@ -140,7 +156,7 @@ class Parser
         return $result;
     }
 
-    private static function xmlParseEntity($node)
+    private function xmlParseEntity($node)
     {
         $result = new Entity();
         /** parse node's attributes */
@@ -153,7 +169,7 @@ class Parser
             $localName = $child->localName;
             switch ($localName) {
                 case Entity::XML_ATTRIBUTES:
-                    $attributes = self::xmlParseAllAttributes($child);
+                    $attributes = $this->xmlParseAllAttributes($child);
                     $result->setAttributes($attributes);
                     break;
                 case Entity::XML_NOTES:

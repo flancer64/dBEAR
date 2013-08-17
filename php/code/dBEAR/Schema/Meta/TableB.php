@@ -28,15 +28,17 @@ use Doctrine\DBAL\Types\Type;
 
 class TableB
 {
-    const COL_ID     = Base::XML_VERSION;
-    const COL_SCHEMA = 'xmlSchema';
-    const NAME       = '_b';
+    const COL_ID       = Base::XML_VERSION;
+    const COL_SCHEMA   = 'xmlSchema';
+    const COL_VERSIONS = 'xmlVersions';
+    const NAME         = '_b';
 
     public static function generate()
     {
         $result = new Table(self::NAME);
         $result->addColumn(self::COL_ID, Type::INTEGER, array("unsigned" => true, 'comment' => 'Version of the dBEAR structure (ID).'));
         $result->addColumn(self::COL_SCHEMA, Type::TEXT, array('comment' => 'XML schema of the appropriate version of the dBEAR structure.'));
+        $result->addColumn(self::COL_VERSIONS, Type::TEXT, array('comment' => 'VersionsMap of the entities and relations to be used in the current schema.'));
         $result->setPrimaryKey(array(self::COL_ID));
         return $result;
     }
