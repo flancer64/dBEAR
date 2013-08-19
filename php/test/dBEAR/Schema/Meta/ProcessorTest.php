@@ -33,7 +33,7 @@ class ProcessorTest extends TestUnit
         $this->doDbRecreate();
         $file          = self::getXmlSchemaFileV1();
         $xml           = file_get_contents($file);
-        $metaProcessor = new Processor(self::_getDbConnection($renew = true));
+        $metaProcessor = new Processor(self::getDbConnection($renew = true));
         $metaProcessor->addSchemaVersionFromXml($xml);
     }
 
@@ -42,21 +42,21 @@ class ProcessorTest extends TestUnit
         $this->doDbRecreate();
         /** create schema V1 */
         $filename      = self::getXmlSchemaFileV1();
-        $metaProcessor = new Processor(self::_getDbConnection($renew = true));
+        $metaProcessor = new Processor(self::getDbConnection($renew = true));
         $metaProcessor->addSchemaVersionFromFile($filename);
         /** create schema V2 */
         $filename      = self::getXmlSchemaFileV2();
-        $metaProcessor = new Processor(self::_getDbConnection($renew = true));
+        $metaProcessor = new Processor(self::getDbConnection($renew = true));
         $metaProcessor->addSchemaVersionFromFile($filename);
         /** create schema V3 */
         $filename      = self::getXmlSchemaFileV3();
-        $metaProcessor = new Processor(self::_getDbConnection($renew = true));
+        $metaProcessor = new Processor(self::getDbConnection($renew = true));
         $metaProcessor->addSchemaVersionFromFile($filename);
     }
 
     private function doDbRecreate()
     {
-        self::_getDbConnection()->exec('drop database ' . self::TEST_DB);
-        self::_getDbConnection()->exec('CREATE DATABASE ' . self::TEST_DB . ' character set utf8 COLLATE utf8_general_ci');
+        self::getDbConnection()->exec('drop database ' . self::TEST_DB);
+        self::getDbConnection()->exec('CREATE DATABASE ' . self::TEST_DB . ' character set utf8 COLLATE utf8_general_ci');
     }
 }

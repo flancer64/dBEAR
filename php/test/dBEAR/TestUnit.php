@@ -29,13 +29,9 @@ class TestUnit extends \PHPUnit_Framework_TestCase
 {
     const TEST_DB = 'dbear01';
     /**
-     * @var \dBEAR\DBAL\Connection
+     * @var \dBEAR\DBAL\DbearConnection
      */
     private static $_dbConnection;
-    /**
-     * @var  \Doctrine\DBAL\Schema\AbstractSchemaManager
-     */
-    private static $_dbSchemaManager;
 
     function __construct()
     {
@@ -79,34 +75,27 @@ class TestUnit extends \PHPUnit_Framework_TestCase
         return $result;
     }
 
-    /**
-     * @return \dBEAR\DBAL\Connection
-     */
-    protected function _getDbConnection($renew = false)
+    protected function getConnectionParams()
     {
-        if (is_null(self::$_dbConnection) || $renew) {
-            $config              = new Configuration();
-            $connectionParams    = array(
-                'dbname'   => self::TEST_DB,
-                'user'     => 'root',
-                'password' => 'MaryRoot',
-                'host'     => 'localhost',
-                'driver'   => 'pdo_mysql',
-            );
-            self::$_dbConnection = DriverManager::getConnection($connectionParams, $config);
-        }
-        return self::$_dbConnection;
+        return array(
+            'dbname'   => self::TEST_DB,
+            'user'     => 'root',
+            'password' => 'MaryRoot',
+            'host'     => 'localhost',
+            'driver'   => 'pdo_mysql',
+        );
     }
 
     /**
-     * @return \Doctrine\DBAL\Schema\AbstractSchemaManager
+     * @return \dBEAR\DBAL\DbearConnection
      */
-    protected function _getDbSchemaManager()
+    protected function getDbConnection($renew = false)
     {
-        if (is_null(self::$_dbSchemaManager)) {
-            self::$_dbSchemaManager = $this->_getDbConnection()->getSchemaManager();
+        if (is_null(self::$_dbConnection) || $renew) {
+            $config              = new Configuration();
+            $params              = $this->getConnectionParams();
+            self::$_dbConnection = DriverManager::getConnection($params, $config);
         }
-        return self::$_dbSchemaManager;
-
+        return self::$_dbConnection;
     }
 }

@@ -31,22 +31,22 @@ class BearTest extends TestUnit
     {
         /** Customer data */
         for ($i = 1; $i <= 100; $i++) {
-            self::_getDbConnection()->exec("insert into e_cust (id) VALUES ($i)");
-            self::_getDbConnection()->exec("insert into a_cust_email (`entity_id`, `value`) VALUES ($i, 'email_$i')");
-            self::_getDbConnection()->exec("insert into a_cust_nfirst (`entity_id`, `value`) VALUES ($i, 'nfirst_$i')");
-            self::_getDbConnection()->exec("insert into a_cust_nlast (`entity_id`, `value`) VALUES ($i, 'nlast_$i')");
+            self::getDbConnection()->exec("insert into e_cust (id) VALUES ($i)");
+            self::getDbConnection()->exec("insert into a_cust_email (`entity_id`, `value`) VALUES ($i, 'email_$i')");
+            self::getDbConnection()->exec("insert into a_cust_nfirst (`entity_id`, `value`) VALUES ($i, 'nfirst_$i')");
+            self::getDbConnection()->exec("insert into a_cust_nlast (`entity_id`, `value`) VALUES ($i, 'nlast_$i')");
         }
         /** Address data */
         for ($i = 1; $i <= 100; $i++) {
-            self::_getDbConnection()->exec("insert into e_addr (id) VALUES ($i)");
-            self::_getDbConnection()->exec("insert into a_addr_country (`entity_id`, `value`) VALUES ($i, 'country_$i')");
-            self::_getDbConnection()->exec("insert into a_addr_zip (`entity_id`, `value`) VALUES ($i, 'zip_$i')");
+            self::getDbConnection()->exec("insert into e_addr (id) VALUES ($i)");
+            self::getDbConnection()->exec("insert into a_addr_country (`entity_id`, `value`) VALUES ($i, 'country_$i')");
+            self::getDbConnection()->exec("insert into a_addr_zip (`entity_id`, `value`) VALUES ($i, 'zip_$i')");
         }
     }
 
     public function test_tmp()
     {
-        $conn = $this->_getDbConnection();
+        $conn = $this->getDbConnection();
         $stmt = $conn->query("select * from e_cust_2");
         while ($row = $stmt->fetch()) {
             print_r($row);
